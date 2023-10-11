@@ -12,7 +12,7 @@ stock.get_prices()
 # options
 strike_price = 105
 risk_free_rate = 0.05
-time2expire = 0.015
+time2expire = 0.2
 models = Pricing_Models(strike_price, risk_free_rate, time2expire, volatility,dt)
 option_price = models.binomial_pricing(stock.prices[0])
 

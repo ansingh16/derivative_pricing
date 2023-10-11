@@ -10,14 +10,20 @@ class Pricing_Models:
         self.sigma = volatility
         self.dt = deltat
 
-    #def get_node_prices(self, i, u, v, p):
-        # return np.exp(-self.risk_free_rate * self.dt*i) * (p * self.
+    
     def binomial_pricing(self,S):
+        # number of time steps
         n = int(self.time2expire/self.dt)
+
+        # fraction of moving upwards
         u = np.exp(self.sigma * np.sqrt(self.dt))
         
+        # probability of upwards movement
         p0 = (u - np.exp(-self.risk_free_rate * self.dt)) / (u**2 - 1)
+        # prob of downward movement
         p1 = np.exp(-self.risk_free_rate * self.dt) - p0
+
+        # container for prices
         p = np.zeros(n+1)
         # initial values at time T
         for i in range(n+1):
@@ -31,11 +37,11 @@ class Pricing_Models:
                 # binomial value
                 p[i] = p0 * p[i+1] + p1 * p[i];   
                 # exercise value
-                exercise = self.strike_price - S * u**(2*i - j)  
-                if p[i] < exercise:
-                    p[i] = exercise
+                # exercise = self.strike_price - S * u**(2*i - j)  
+                # if p[i] < exercise:
+                #     p[i] = exercise
             
-        
+        # return current option price
         return p[0]
 
 
