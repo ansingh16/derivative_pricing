@@ -1,46 +1,41 @@
 import numpy as np
 from Stock_movement import StockMovement
 
-class Pricing_Models(StockMovement):
+class Pricing_Models:
     
-    def __init__(self,strike_price,risk_free_rate):
+    def __init__(self,strike_price,risk_free_rate,time2expire,volatility,deltat):
         self.strike_price = strike_price
         self.risk_free_rate = risk_free_rate
+        self.time2expire = time2expire
+        self.sigma = volatility
+        self.dt = deltat
 
-    def binomial_pricing(S, K, T, r, sigma, n):
-        dt = T / n
-        u = np.exp(sigma * np.sqrt(dt))
-        d = 1 / u
-        p = (np.exp(r * dt) - d) / (u - d)
+    #def get_node_prices(self, i, u, v, p):
+        # return np.exp(-self.risk_free_rate * self.dt*i) * (p * self.
+    def binomial_pricing(self,S):
+        n = int(self.time2expire/self.dt)
+        u = np.exp(self.sigma * np.sqrt(self.dt))
         
-        # Initialize stock price tree
-        stock_tree = np.zeros((n+1, n+1))
-        stock_tree[0, 0] = S
+        p0 = (u - np.exp(-self.risk_free_rate * self.dt)) / (u**2 - 1)
+        p1 = np.exp(-self.risk_free_rate * self.dt) - p0
+        p = np.zeros(n+1)
+        # initial values at time T
+        for i in range(n+1):
+            p[i] = self.strike_price - S * u**(2*i - n)
+            if p[i] < 0:
+                p[i] = 0
         
-        # Calculate stock prices at each node
-        for i in range(1, n+1):
-            for j in range(i+1):
-                stock_tree[i, j] = stock_tree[i-1, j] * u
-                if j > 0:
-                    stock_tree[i, j] *= d
-                    
-        # Calculate option prices at the final time step
-        option_tree = np.maximum(0, stock_tree - K)
+        # move to earlier times
+        for j in range(n-1):
+            for i in range(j):
+                # binomial value
+                p[i] = p0 * p[i+1] + p1 * p[i];   
+                # exercise value
+                exercise = self.strike_price - S * u**(2*i - j)  
+                if p[i] < exercise:
+                    p[i] = exercise
+            
         
-        # Backward induction to calculate option prices at earlier time steps
-        for i in range(n-1, -1, -1):
-            for j in range(i+1):
-                option_tree[i, j] = np.exp(-r * dt) * (p * option_tree[i+1, j] + (1 - p) * option_tree[i+1, j+1])
-        
-        return option_tree[0, 0]
+        return p[0]
 
-# # Example usage:
-# S0 = 100  # Initial stock price
-# K = 105   # Strike price
-# T = 1     # Time to expiration (in years)
-# r = 0.05  # Risk-free interest rate
-# sigma = 0.2  # Volatility
-# n = 100   # Number of time steps
 
-# option_price = binomial_pricing(S0, K, T, r, sigma, n)
-# print("Option price:", option_price)
