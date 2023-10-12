@@ -1,39 +1,56 @@
+import numpy as np
 from Stock_movement import StockMovement
-from Binomial_pricing import Pricing_Models
 
-duration = 2 # years
-dt = 1/252 # years
-volatility = 1
-mean_return = 0.1
-stock = StockMovement(100, duration, dt, volatility, mean_return)
-stock.get_prices()
+class Pricing_Models:
+    
+    def __init__(self,strike_price,risk_free_rate,expiry,volatility,deltat):
+        self.strike_price = strike_price
+        self.risk_free_rate = risk_free_rate
+        self.expiry = expiry
+        self.sigma = volatility
+        self.dt = deltat
+
+    
+    def binomial_pricing(self,S,t):
+        self.time2expire = self.expiry - t
+        # number of time steps
+        n = int(self.time2expire/self.dt)
+
+        # fraction of moving upwards
+        u = np.exp(self.sigma * np.sqrt(self.dt))
+        
+        # probability of upwards movement
+        p0 = (u - np.exp(-self.risk_free_rate * self.dt)) / (u**2 - 1)
+        # prob of downward movement
+        p1 = np.exp(-self.risk_free_rate * self.dt) - p0
+
+        # container for prices
+        p = np.zeros(n+1)
+        # initial values at time T
+        for i in range(n+1):
+            p[i] = self.strike_price - S * u**(2*i - n)
+            if p[i] < 0:
+                p[i] = 0
+        
+        # move to earlier times
+        for j in range(n-1):
+            for i in range(j):
+                # binomial value
+                p[i] = p0 * p[i+1] + p1 * p[i];   
+                # exercise value
+                # exercise = self.strike_price - S * u**(2*i - j)  
+                # if p[i] < exercise:
+                #     p[i] = exercise
+            
+        # return current option price
+        return p[0]
+    
+    def Black_Scholes(self,S,t):
+        self.time2expire = self.expiry - t
+        # calculate d1 and d2
+        d1 = (np.log(S / self.strike_price) + (self.risk_free_rate + 0.5 * self.sigma**2) * self.time2expire) / (self.sigma * np.sqrt(self.time2expire))
+        d2 = d1 - self.sigma * np.sqrt(self.time2expire)
+        
+        return S * np.exp(-self.risk_free_rate * self.time2expire) * np.cdf(d1) - self.strike_price * np.exp(-self.risk_free_rate * self.time2expire) * np.cdf(d2)
 
 
-# options
-strike_price = 105
-risk_free_rate = 0.05
-time2expire = 0.2
-models = Pricing_Models(strike_price, risk_free_rate, time2expire, volatility,dt)
-option_price = models.binomial_pricing(stock.prices[0])
-
-print("Option price:", option_price)
-# print(stock.prices)
-# # Example usage:
-# T = 1.0          # Total time (in years)
-# mu = 0.1         # Drift (average return)
-# sigma = 0.2      # Volatility (standard deviation of return)
-# S0 = 100.0       # Initial stock price
-# dt = 1/252.0     # Time step (trading days per year)
-
-# t, S = brownian_motion(T, mu, sigma, S0, dt)
-
-# # Example usage:
-# S0 = 100  # Initial stock price
-# K = 105   # Strike price
-# T = 1     # Time to expiration (in years)
-# r = 0.05  # Risk-free interest rate
-# sigma = 0.2  # Volatility
-# n = 100   # Number of time steps
-
-# option_price = binomial_pricing(S0, K, T, r, sigma, n)
-# print("Option price:", option_price)
