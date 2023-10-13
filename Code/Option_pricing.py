@@ -1,5 +1,6 @@
 import numpy as np
 from Stock_movement import StockMovement
+import scipy.stats as stats
 
 class Pricing_Models:
     
@@ -45,12 +46,15 @@ class Pricing_Models:
         # return current option price
         return p[0]
     
-    def Black_Scholes(self,S,t):
+    def Black_Scholes(self,S,t,type):
         self.time2expire = self.expiry - t
         # calculate d1 and d2
         d1 = (np.log(S / self.strike_price) + (self.risk_free_rate + 0.5 * self.sigma**2) * self.time2expire) / (self.sigma * np.sqrt(self.time2expire))
         d2 = d1 - self.sigma * np.sqrt(self.time2expire)
         
-        return S * np.exp(-self.risk_free_rate * self.time2expire) * np.cdf(d1) - self.strike_price * np.exp(-self.risk_free_rate * self.time2expire) * np.cdf(d2)
+        if type=="call":
+            return S* stats.norm.cdf(d1) - self.strike_price * np.exp(-self.risk_free_rate * self.time2expire) * stats.norm.cdf(d2)
+        else:
+            return self.strike_price * np.exp(-self.risk_free_rate * self.time2expire) * stats.norm.cdf(-d2) - S *stats.norm.cdf(-d1) 
 
 
