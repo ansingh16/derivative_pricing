@@ -51,7 +51,6 @@ class Pricing_Models:
         # calculate d1 and d2
         d1 = (np.log(S / self.strike_price) + (self.risk_free_rate + 0.5 * self.sigma**2) * self.time2expire) / (self.sigma * np.sqrt(self.time2expire))
         d2 = d1 - self.sigma * np.sqrt(self.time2expire)
-        
         if type=="call":
             return S* stats.norm.cdf(d1) - self.strike_price * np.exp(-self.risk_free_rate * self.time2expire) * stats.norm.cdf(d2)
         else:
