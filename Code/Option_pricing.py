@@ -1,5 +1,5 @@
 import numpy as np
-from Stock_movement import StockMovement
+# from Code.MonteCarlo import StockMovement
 import scipy.stats as stats
 
 class Pricing_Models:
@@ -56,4 +56,14 @@ class Pricing_Models:
         else:
             return self.strike_price * np.exp(-self.risk_free_rate * self.time2expire) * stats.norm.cdf(-d2) - S *stats.norm.cdf(-d1) 
 
+    def MonteCarlo(self,S,t,N):
+        self.time2expire = self.expiry - t
+        # number of time steps
+        n = int(self.time2expire/self.dt)
+
+        ST = np.log(S) +  np.cumsum(((r - self.sigma**2/2)*self.dt +\
+                            self.sigma*np.sqrt(self.dt) * \
+                            np.random.normal(size=(n,N))),axis=0)
+
+        return np.exp(ST)
 

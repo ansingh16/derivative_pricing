@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from Stock_movement import StockMovement
+from Code.MonteCarlo import StockMovement
 from Option_pricing import Pricing_Models
 
 
