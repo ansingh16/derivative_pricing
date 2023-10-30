@@ -46,15 +46,17 @@ class Pricing_Models:
         # return current option price
         return p[0]
     
-    def Black_Scholes(self,S,t,type):
-        self.time2expire = self.expiry - t
+    def Black_Scholes(self,S,type):
+        self.time2expire = self.expiry
         # calculate d1 and d2
         d1 = (np.log(S / self.strike_price) + (self.risk_free_rate + 0.5 * self.sigma**2) * self.time2expire) / (self.sigma * np.sqrt(self.time2expire))
         d2 = d1 - self.sigma * np.sqrt(self.time2expire)
         if type=="call":
-            return S* stats.norm.cdf(d1) - self.strike_price * np.exp(-self.risk_free_rate * self.time2expire) * stats.norm.cdf(d2)
+            call_price = S* stats.norm.cdf(d1) - self.strike_price * np.exp(-self.risk_free_rate * self.time2expire) * stats.norm.cdf(d2)
+            return call_price.values[0]
         else:
-            return self.strike_price * np.exp(-self.risk_free_rate * self.time2expire) * stats.norm.cdf(-d2) - S *stats.norm.cdf(-d1) 
+            put_price = self.strike_price * np.exp(-self.risk_free_rate * self.time2expire) * stats.norm.cdf(-d2) - S *stats.norm.cdf(-d1) 
+            return put_price.values[0]
 
     def MonteCarlo(self,S,t,N):
         self.time2expire = self.expiry - t
