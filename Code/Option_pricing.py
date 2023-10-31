@@ -1,6 +1,7 @@
 import numpy as np
 # from Code.MonteCarlo import StockMovement
 import scipy.stats as stats
+import numpy.random as npr
 
 class Pricing_Models:
     
@@ -58,14 +59,30 @@ class Pricing_Models:
             put_price = self.strike_price * np.exp(-self.risk_free_rate * self.time2expire) * stats.norm.cdf(-d2) - S *stats.norm.cdf(-d1) 
             return put_price.values[0]
 
-    def MonteCarlo(self,S,t,N):
-        self.time2expire = self.expiry - t
-        # number of time steps
-        n = int(self.time2expire/self.dt)
+    def MonteCarlo(self,S,N,type):
 
-        ST = np.log(S) +  np.cumsum(((r - self.sigma**2/2)*self.dt +\
-                            self.sigma*np.sqrt(self.dt) * \
-                            np.random.normal(size=(n,N))),axis=0)
+        # N is the number of trials
 
-        return np.exp(ST)
+        steps = int(self.expiry/self.dt)
+        
+        # Generate random stock price paths
+        np.random.seed(0)
+        z = np.random.standard_normal((N, 1))
+        ST = S * np.exp((self.risk_free_rate - 0.5 * self.sigma ** 2) * self.expiry + self.sigma* np.sqrt(self.expiry) * z)
+
+        # Calculate option payoffs
+        if type=="call":
+            payoff = np.maximum(self.strike_price - ST, 0)
+        else:
+            # it's put option
+            payoff = np.maximum(ST - self.strike_price, 0)
+
+        # Calculate option price
+        option_price = np.exp(-self.risk_free_rate * self.expiry) * np.mean(payoff)
+
+  
+        return option_price
+    
+    def mc_call_price(self,asset_price,i):
+        return np.exp(-self.risk_free_rate*self.expiry)*max(asset_price - self.strike_price,0)
 
