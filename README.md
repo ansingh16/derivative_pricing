@@ -9,4 +9,5 @@ This repository contains following codes:
 - Option_pricing.py: calculate the price for a european option given a share price, strike price and volatility. Contains the classes for:
     - Binomial Pricing Model
     - Black-Scholes Model
+    - Monte Carlo Model
 

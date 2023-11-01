@@ -2,6 +2,7 @@ import numpy as np
 # from Code.MonteCarlo import StockMovement
 import scipy.stats as stats
 import numpy.random as npr
+from scipy.stats import norm
 
 class Pricing_Models:
     
@@ -58,6 +59,20 @@ class Pricing_Models:
         else:
             put_price = self.strike_price * np.exp(-self.risk_free_rate * self.time2expire) * stats.norm.cdf(-d2) - S *stats.norm.cdf(-d1) 
             return put_price.values[0]
+    
+    def vega(self,S):
+        '''Parameters:
+            S: Asset price
+        returns: partial derivative w.r.t volatility
+        '''
+
+        ### calculating d1 from black scholes
+        d1 = (np.log(S / self.strike_price) + (self.risk_free_rate + self.sigma ** 2 / 2) * self.expiry) / self.sigma * np.sqrt(self.expiry)
+
+        #see hull derivatives chapter on greeks for reference
+        vega = S * norm.pdf(d1) * np.sqrt(self.expiry)
+        return vega.values[0]
+
 
     def MonteCarlo(self,S,N,type):
 
