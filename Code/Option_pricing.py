@@ -55,23 +55,27 @@ class Pricing_Models:
         d2 = d1 - self.sigma * np.sqrt(self.time2expire)
         if type=="call":
             call_price = S* stats.norm.cdf(d1) - self.strike_price * np.exp(-self.risk_free_rate * self.time2expire) * stats.norm.cdf(d2)
-            return call_price.values[0]
+            return call_price
         else:
             put_price = self.strike_price * np.exp(-self.risk_free_rate * self.time2expire) * stats.norm.cdf(-d2) - S *stats.norm.cdf(-d1) 
-            return put_price.values[0]
+            return put_price
     
     def vega(self,S):
         '''Parameters:
             S: Asset price
         returns: partial derivative w.r.t volatility
         '''
-
+        self.time2expire = self.expiry
         ### calculating d1 from black scholes
-        d1 = (np.log(S / self.strike_price) + (self.risk_free_rate + self.sigma ** 2 / 2) * self.expiry) / self.sigma * np.sqrt(self.expiry)
+        d1 = (np.log(S / self.strike_price) + (self.risk_free_rate + 0.5 * self.sigma**2) * self.time2expire) / (self.sigma * np.sqrt(self.time2expire))
 
+        #print(f"sigma in vega: {self.sigma}")
         #see hull derivatives chapter on greeks for reference
         vega = S * norm.pdf(d1) * np.sqrt(self.expiry)
-        return vega.values[0]
+
+        if vega==0:
+            print(f"S: {S}, strike: {self.strike_price}, d1: {d1}, expiry: {self.expiry}, sigma: {self.sigma}")
+        return vega
 
 
     def MonteCarlo(self,S,N,type):
@@ -87,10 +91,10 @@ class Pricing_Models:
 
         # Calculate option payoffs
         if type=="call":
-            payoff = np.maximum(self.strike_price - ST, 0)
+            payoff = np.maximum(ST-self.strike_price, 0)
         else:
             # it's put option
-            payoff = np.maximum(ST - self.strike_price, 0)
+            payoff = np.maximum(self.strike_price -ST, 0)
 
         # Calculate option price
         option_price = np.exp(-self.risk_free_rate * self.expiry) * np.mean(payoff)
