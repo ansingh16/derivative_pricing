@@ -73,8 +73,8 @@ class Pricing_Models:
         #see hull derivatives chapter on greeks for reference
         vega = S * norm.pdf(d1) * np.sqrt(self.expiry)
 
-        if vega==0:
-            print(f"S: {S}, strike: {self.strike_price}, d1: {d1}, expiry: {self.expiry}, sigma: {self.sigma}")
+        # if vega==0:
+        #     print(f"S: {S}, strike: {self.strike_price}, d1: {d1}, expiry: {self.expiry}, sigma: {self.sigma}")
         return vega
 
 
